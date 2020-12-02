@@ -1,10 +1,10 @@
 from socket import socket, AF_INET, SOCK_STREAM
 import os
 from time import strptime, mktime
+import threading
 
-HOST = '127.0.0.1'
+HOST = '192.168.1.32'
 PORT = 1337
-
 
 routes = {
     "/test": "test.html",
@@ -15,7 +15,6 @@ routes = {
 media = {
     "/favicon.ico": "favicon.ico"
 }
-
 
 def get_file_data(name):
     f = open(name, 'rb')
@@ -34,35 +33,27 @@ def handle_data(file_name, message, format):
     header_template = "HTTP/1.1 {}\r\n"
     content_type_template = 'Content-Type: {}\r\nContent-Length: {}\r\n\r\n'
 
-    body = b""
     if file_name:
         body = get_file_data(file_name)
+    else:
+        body = b""
 
     header = header_template.format(message).encode()
 
-    content_type = b""
     if format:
         content_type = content_type_template.format(format, str(len(body))).encode()
+    else:
+        content_type = b""
 
     return header + content_type + body
 
-
-server_socket = socket(AF_INET, SOCK_STREAM)
-server_socket.bind((HOST, PORT))
-server_socket.listen(5)
-
-
-while True:
-    connectionSocket, address = server_socket.accept()
-    print('Connection from', address)
-
-    connectionSocket.settimeout(10)
-
+def threaded(my_socket):
+    print("Thread with id {} created".format(threading.get_ident()))
     # Will contain the final response
     data = b""
 
     try:
-        message = connectionSocket.recv(1024)
+        message = my_socket.recv(1024)
 
         split_message = message.decode().split("\r\n")
         first_line = split_message[0].split()
@@ -117,14 +108,26 @@ while True:
             print("Could not serve: {}".format(filename))
             data = handle_data("404_not_found.html", '404 Not Found', 'text/html')
 
-    except socket.timeout as e:
+    except socket.timeout:
         # 408 - handle timeout
-        print("Could not serve: {}".format(e))
+        print("Could not serve: timeout")
         data = handle_data("408_request_timed_out.html", '408 Request Timed Out', 'text/html')
 
     finally:
         # print(data)
         connectionSocket.send(data)
         connectionSocket.close()
+
+server_socket = socket(AF_INET, SOCK_STREAM)
+server_socket.bind((HOST, PORT))
+server_socket.listen(5)
+
+while True:
+    connectionSocket, address = server_socket.accept()
+    print('Connection from', address)
+
+    connectionSocket.settimeout(10)
+
+    threading.Thread(target=threaded, args=(connectionSocket,)).start()
 
 server_socket.close()
