@@ -1,10 +1,9 @@
-from socket import socket, AF_INET, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM, gethostname
 import os
 from time import strptime, mktime
 
-HOST = '127.0.0.1'
+HOST = gethostname()
 PORT = 1337
-
 
 routes = {
     "/test": "test.html",

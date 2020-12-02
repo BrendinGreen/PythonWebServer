@@ -1,9 +1,9 @@
-from socket import socket, AF_INET, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM, gethostname
 import os
 from time import strptime, mktime
 import threading
 
-HOST = '192.168.1.32'
+HOST = gethostname()
 PORT = 1337
 
 routes = {
