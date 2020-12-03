@@ -2,7 +2,7 @@ from socket import socket, AF_INET, SOCK_STREAM, gethostname
 import os
 from time import strptime, mktime
 
-HOST = gethostname()
+HOST = '127.0.0.1'
 PORT = 1337
 
 routes = {
@@ -46,6 +46,24 @@ def handle_data(file_name, message, format):
     return header + content_type + body
 
 
+def handle_if_modified_since(file_name, output, map, format):
+    if "If-Modified-Since" in output:
+
+        try:
+            mod_since = mktime(strptime(output["If-Modified-Since"], "%a, %d %b %Y %I:%M:%S %Z"))
+            file_mod = os.path.getmtime(map[file_name])
+
+            if mod_since < file_mod:
+                # 304 - Not Modified
+                return handle_data("", '304 Not Modified', "")
+
+        except:
+            return handle_data("400_bad_request.html", '400 Bad Request', format)
+
+    # 200
+    return handle_data(map[file_name], '200 OK', format)
+
+
 server_socket = socket(AF_INET, SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 server_socket.listen(5)
@@ -83,32 +101,13 @@ while True:
 
         # 200 - handle known routes
         elif filename in routes.keys():
-            # Given url is in our set of routes
             print("Serving: {}".format(filename))
-            if "If-Modified-Since" in output:
-                mod_since = mktime(strptime(output["If-Modified-Since"], "%a, %d %b %Y %I:%M:%S %Z"))
-                file_mod = os.path.getmtime(routes[filename])
-                if mod_since < file_mod:
-                    # 304 - Not Modified
-                    data = handle_data("", '304 Not Modified', "")
-                else:
-                    data = handle_data(routes[filename], '200 OK', 'text/html')
-            else:
-                data = handle_data(routes[filename], '200 OK', 'text/html')
+            data = handle_if_modified_since(filename, output, routes, 'text/html')
 
-        # 200 - handle media
+        # 200 - handle known media
         elif filename in media.keys():
             print("Serving: {}".format(filename))
-            if "If-Modified-Since" in output:
-                mod_since = mktime(strptime(output["If-Modified-Since"], "%a, %d %b %Y %I:%M:%S %Z"))
-                file_mod = os.path.getmtime(media[filename])
-                if mod_since < file_mod:
-                    # 304 - Not Modified
-                    data = handle_data("", '304 Not Modified', "")
-                else:
-                    data = handle_data(media[filename], '200 OK', 'image/x-icon')
-            else:
-                data = handle_data(media[filename], '200 OK', 'image/x-icon')
+            data = handle_if_modified_since(filename, output, media, 'image/x-icon')
 
         # 404 - handle not found
         else:
