@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MPD id="0564e940-122b-42bb-9d56-98f3def67247" profiles="urn:mpeg:dash:profile:isoff-main:2011" type="static" availabilityStartTime="2016-01-14T09:30:35.000Z" publishTime="2016-01-14T09:31:33.000Z" mediaPresentationDuration="P0Y0M0DT0H2M17.000S" minBufferTime="P0Y0M0DT0H0M1.000S" bitmovin:version="1.6.0" xmlns:ns2="http://www.w3.org/1999/xlink" xmlns="urn:mpeg:dash:schema:mpd:2011" xmlns:bitmovin="http://www.bitmovin.net/mpd/2015">
+    <Period>
+        <AdaptationSet mimeType="video/mp4">
+            <SegmentTemplate media="../video/$RepresentationID$/dash/segment_$Number$.m4s" initialization="../video/$RepresentationID$/dash/MPDMovie.mp4" duration="120119" startNumber="0" timescale="30000"/>
+            <Representation id="1920_9000000" bandwidth="9000000" width="3840" height="1920" frameRate="30"/>
+            <Representation id="1080_5000000" bandwidth="5000000" width="2160" height="1080" frameRate="30"/>
+            <Representation id="720_3000000" bandwidth="3000000" width="1440" height="720" frameRate="30"/>
+            <Representation id="540_1500000" bandwidth="1500000" width="1080" height="540" frameRate="30"/>
+            <Representation id="360_1000000" bandwidth="1000000" width="720" height="360" frameRate="30"/>
+        </AdaptationSet>
+        <AdaptationSet lang="en" mimeType="audio/mp4" codecs="mp4a.40.2" bitmovin:label="english stereo">
+            <AudioChannelConfiguration schemeIdUri="urn:mpeg:dash:23003:3:audio_channel_configuration:2011" value="2"/>
+            <SegmentTemplate media="../audio/$RepresentationID$/dash/segment_$Number$.m4s" initialization="../audio/$RepresentationID$/dash/MPDMovie.mp4" duration="191472" startNumber="0" timescale="48000"/>
+            <Representation id="1_stereo_128000" bandwidth="128000" audioSamplingRate="48000"/>
+        </AdaptationSet>
+    </Period>
+</MPD>
+
+<!-- Need to define: -->
+<!--
+- name of file: 'MPDMovie'
+- file format: 'mp4'
+- number of file chunks: '10'
+- number of different resolutions: '3'
+- number of different bandwidth settings: '2'
+-->
